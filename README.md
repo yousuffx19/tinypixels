@@ -7,6 +7,7 @@ basic CPU renderer written in C with raylib. simulates the graphics processing p
 - load and display obj models
 - simulates vertex shading, rasterization in CPU
 - can perform projection, translation and rotation around axes
+- depth buffer testing
 
 ## Built With
 
