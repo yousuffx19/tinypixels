@@ -3,6 +3,8 @@
 #include <raymath.h>
 #include "parser.h"
 
+float z_buffer[800][800];
+
 float max(float f1, float f2, float f3){
 	if(f1 >= f3 && f1 >= f2){
 		return f1;
@@ -60,8 +62,13 @@ void Rasterize(Vector3 A, Vector3 B, Vector3 C){
         	float u = Vector3Length(uVec)/area;
         	float v = Vector3Length(vVec)/area;
         	float w = 1 - u - v;
+		float inv_z = a * u + b * v + c * w;
+		if(inv_z < z_buffer[j][i]){
+			continue;
+		}
 		Color color = {u * 255, v * 255, w * 255, 255};
 		DrawPixel(i, j, GREEN);
+		z_buffer[j][i] = inv_z;
 	}
         }
 }
@@ -100,11 +107,15 @@ int main(){
 	const int screenWidth = 800;
         const int screenHeight = 800;
         InitWindow(screenWidth, screenHeight, "tinypixels");
-
 	SetTargetFPS(60);
 	Vector3 vertices[20000];
 	int num_triangle_vertices = parse_obj("models/teapot.obj", vertices);
 	while(!WindowShouldClose()){
+		for(int i = 0; i < screenWidth; i++){
+                for(int j = 0; j < screenHeight; j++){
+                        z_buffer[j][i] = -10000;
+                }
+        }
 		BeginDrawing();
 		ClearBackground(BLACK);
 		for(int i = 0; i < num_triangle_vertices; i+=3){

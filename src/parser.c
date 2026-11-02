@@ -37,9 +37,6 @@ int parse_obj(char* fname, Vector3* final_vertices){
 		else if(has_textures == 0 && has_normals == 0){
 			sscanf(line_buffer+2, "%d %d %d", &n1, &n2, &n3);
 		}
-		//else if(has_textures == 0 && has_normals == 1){
-		//	sscanf(line_buffer+2, "%d//%d %d//%d %d//%d", &n1, &m1, &n2, &m2, &n3, &m3);
-		//}
 		else{
 			sscanf(line_buffer+2, "%d %d %d", &n1, &n2, &n3);
 		}
