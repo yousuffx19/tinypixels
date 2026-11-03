@@ -2,10 +2,73 @@
 #include <stdio.h>
 #include <raylib.h>
 #include <raymath.h>
+#include <string.h>
 
 float vertices[5000][3];
 int pvertices;
 int ptriangles;
+
+void strip_spaces(char *line){
+        int n = strlen(line);
+        int p = 0;
+        int num_space = 0;
+        for(int i = 0; i < n; i++){
+                if(line[i] == ' '){
+                        if(p == 0){
+                                continue;
+                        }
+                        num_space++;
+                }
+                else{
+                        num_space = 0;
+                }
+                if(num_space > 1){
+                        continue;
+                }
+                line[p] = line[i];
+                p++;
+        }
+        line[p] = '\0';
+}
+
+int parse_line(char *line, Vector3* vertex_index){
+        char* current_word;
+	strip_spaces(line);
+	int line_length = (int) strlen(line);
+        int cp = 0;
+        int first_vertex;
+        int prev_vertex;
+        int vertex;
+	Vector3 final_vertex;
+        int *saveptr;
+	int vp = 0;
+	char *has_slash = strchr(line, '/');
+        while((current_word = strtok(line+cp, " ")) != NULL && cp < line_length){
+		if(has_slash == NULL){
+			sscanf(current_word, "%d", &vertex);
+		}
+		else{
+			sscanf(current_word, "%d/", &vertex);
+		}
+                if(vp == 0){
+                        first_vertex = vertex;
+                }
+                if(vp > 2){
+			final_vertex = (Vector3) {vertices[first_vertex-1][0], vertices[first_vertex-1][1], vertices[first_vertex-1][2]};
+                        vertex_index[ptriangles] = final_vertex;
+			final_vertex = (Vector3) {vertex_index[ptriangles-1].x, vertex_index[ptriangles-1].y, vertex_index[ptriangles-1].z};
+			vertex_index[ptriangles + 1] = final_vertex;
+			ptriangles+=2;
+                        vp += 2;
+                }
+		final_vertex = (Vector3) {vertices[vertex-1][0], vertices[vertex-1][1], vertices[vertex-1][2]};
+                vertex_index[ptriangles] = final_vertex;
+                vp++;
+		ptriangles++;
+                cp += strlen(current_word)+1;
+        }
+        return vp;
+}
 
 int parse_obj(char* fname, Vector3* final_vertices){
 	int has_textures = 0;
@@ -30,31 +93,10 @@ int parse_obj(char* fname, Vector3* final_vertices){
                 has_normals = 1;
         }
 	if(line_buffer[0] == 'f' && line_buffer[1] == ' '){
-		int n1, n2, n3, m1, m2, m3, p1, p2, p3;
-		if(has_textures == 1 && has_normals == 1){
-			sscanf(line_buffer+2, "%d/%d/%d %d/%d/%d %d/%d/%d", &n1, &m1, &p1, &n2, &m2, &p2, &n3, &m3, &p3);
-		}
-		else if(has_textures == 0 && has_normals == 0){
-			sscanf(line_buffer+2, "%d %d %d", &n1, &n2, &n3);
-		}
-		else{
-			sscanf(line_buffer+2, "%d %d %d", &n1, &n2, &n3);
-		}
-		n1--;
-		n2--;
-		n3--;
-		Vector3 A = (Vector3) {vertices[n1][0], vertices[n1][1], vertices[n1][2]};
-		Vector3 B = (Vector3) {vertices[n2][0], vertices[n2][1], vertices[n2][2]};
-		Vector3 C = (Vector3) {vertices[n3][0], vertices[n3][1], vertices[n3][2]};
-		final_vertices[ptriangles] = A;
-		printf("%f %f %f\n", A.x, A.y, A.z);
-		final_vertices[ptriangles+1] = B;
-		printf("%f %f %f\n", B.x, B.y, B.z);
-		final_vertices[ptriangles+2] = C;
-		printf("%f %f %f\n", C.x, C.y, C.z);
-		ptriangles+=3;	
+		parse_line(line_buffer+2, final_vertices);
 	}
 	}
+	printf("T:%d\n", ptriangles);
 	return ptriangles;
 }
 
