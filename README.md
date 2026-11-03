@@ -16,6 +16,4 @@ basic CPU renderer written in C with raylib. simulates the graphics processing p
 
 ## Limitations
 - it does not use the GPU, so it is extremely slow
-- obj file parsing breaks when face format is different
-- only support for 3 order faces
 - fixed buffers for storing vertices and triangles - it can break if the model is too large
