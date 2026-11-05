@@ -1,7 +1,6 @@
 # tinypixels
 
 basic CPU renderer written in C with raylib. simulates the graphics processing pipeline but on the CPU. so it is very slow.
-<img src="assets/teapot.png" width="50%" alt="teapot in tinypixels">
 ## Features
 
 - load and display obj models
