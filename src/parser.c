@@ -3,8 +3,9 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <string.h>
+#include "memory.h"
 
-float vertices[5000][3];
+array* vertices;
 int pvertices;
 int ptriangles;
 
@@ -31,7 +32,7 @@ void strip_spaces(char *line){
         line[p] = '\0';
 }
 
-int parse_line(char *line, Vector3* vertex_index){
+int parse_line(char *line, array* vertex_index){
         char* current_word;
 	strip_spaces(line);
 	int line_length = (int) strlen(line);
@@ -54,15 +55,12 @@ int parse_line(char *line, Vector3* vertex_index){
                         first_vertex = vertex;
                 }
                 if(vp > 2){
-			final_vertex = (Vector3) {vertices[first_vertex-1][0], vertices[first_vertex-1][1], vertices[first_vertex-1][2]};
-                        vertex_index[ptriangles] = final_vertex;
-			final_vertex = (Vector3) {vertex_index[ptriangles-1].x, vertex_index[ptriangles-1].y, vertex_index[ptriangles-1].z};
-			vertex_index[ptriangles + 1] = final_vertex;
+                        add_element(vertex_index, get_element(vertices, first_vertex - 1));
+			add_element(vertex_index, get_element(vertex_index, ptriangles-1));
 			ptriangles+=2;
                         vp += 2;
                 }
-		final_vertex = (Vector3) {vertices[vertex-1][0], vertices[vertex-1][1], vertices[vertex-1][2]};
-                vertex_index[ptriangles] = final_vertex;
+                add_element(vertex_index, get_element(vertices, vertex - 1));
                 vp++;
 		ptriangles++;
                 cp += strlen(current_word)+1;
@@ -70,21 +68,19 @@ int parse_line(char *line, Vector3* vertex_index){
         return vp;
 }
 
-int parse_obj(char* fname, Vector3* final_vertices){
+int parse_obj(char* fname, array* final_vertices){
 	int has_textures = 0;
 	int has_normals = 0;
 	FILE* f = fopen(fname, "r");
 	char line_buffer[100];
-	pvertices = 0;
+	vertices = init_array();
 	ptriangles = 0;
 	while(fgets(line_buffer, 100, f) != NULL){
 	if(line_buffer[0] == 'v' && line_buffer[1] == ' '){
 		float v1, v2, v3;
 		sscanf(line_buffer+2, "%f %f %f", &v1, &v2, &v3);
-		vertices[pvertices][0] = v1;
-		vertices[pvertices][1] = v2;
-		vertices[pvertices][2] = v3;
-		pvertices++;
+		Vector3 v = (Vector3) {v1, v2, v3};
+		add_element(vertices, v);
 	}
 	if(line_buffer[0] == 'v' && line_buffer[1] == 't'){
 		has_textures = 1;
@@ -96,7 +92,7 @@ int parse_obj(char* fname, Vector3* final_vertices){
 		parse_line(line_buffer+2, final_vertices);
 	}
 	}
-	printf("T:%d\n", ptriangles);
-	return ptriangles;
+	printf("T:%d\n", get_length(final_vertices));
+	return get_length(final_vertices);
 }
 

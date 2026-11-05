@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include "parser.h"
+#include "memory.h"
 
 float z_buffer[800][800];
 
@@ -67,7 +68,8 @@ void Rasterize(Vector3 A, Vector3 B, Vector3 C){
 			continue;
 		}
 		Color color = {u * 255, v * 255, w * 255, 255};
-		DrawPixel(i, j, GREEN);
+		color = (Color) {201, 96, 230, 255};
+		DrawPixel(i, j, color);
 		z_buffer[j][i] = inv_z;
 	}
         }
@@ -108,7 +110,7 @@ int main(){
         const int screenHeight = 800;
         InitWindow(screenWidth, screenHeight, "tinypixels");
 	SetTargetFPS(60);
-	Vector3 vertices[20000];
+	array* vertices = init_array();
 	int num_triangle_vertices = parse_obj("models/teapot.obj", vertices);
 	while(!WindowShouldClose()){
 		for(int i = 0; i < screenWidth; i++){
@@ -119,9 +121,9 @@ int main(){
 		BeginDrawing();
 		ClearBackground(BLACK);
 		for(int i = 0; i < num_triangle_vertices; i+=3){
-			Vector3 A = NDCToScreen(VertexShader(vertices[i]), screenWidth, screenHeight);
-			Vector3 B = NDCToScreen(VertexShader(vertices[i+1]), screenWidth, screenHeight);
-			Vector3 C = NDCToScreen(VertexShader(vertices[i+2]), screenWidth, screenHeight);
+			Vector3 A = NDCToScreen(VertexShader(get_element(vertices, i)), screenWidth, screenHeight);
+			Vector3 B = NDCToScreen(VertexShader(get_element(vertices, i+1)), screenWidth, screenHeight);
+			Vector3 C = NDCToScreen(VertexShader(get_element(vertices, i+2)), screenWidth, screenHeight);
 			Rasterize(A, B, C);
 		}
 		EndDrawing();
